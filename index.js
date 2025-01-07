@@ -2,47 +2,21 @@ const express = require("express");
 const jwt = require("jsonwebtoken");
 const dotenv = require("dotenv");
 const mongoose = require("mongoose");
+const {userRouter} = require("./routes/user");
+const {courseRouter} = require("./routes/course");
 
 dotenv.config();
 
 const JWT_SECRET = process.env.JWT_SECRET;
-const app = express();
 const port = 3000;
 
+const app = express();
+
 app.use(express.json());
-
-app.post("/user/signup", (req,res)=>{
-    res.json({
-        message: "signup endpoint",
-    });
-});
-
-app.post("/user/signin", (req,res)=>{
-    res.json({
-        message: "signin endpoint",
-    });
-});
-
-app.post("/course/purchase", (req,res)=>{
-    res.json({
-        message: "time to purchase",
-    });
-});
-
-app.get("/user/purchases", (req,res)=>{
-    res.json({
-        message: "Purchased Courses",
-    });
-});
-
-app.get("/courses", (req,res)=>{
-    res.json({
-        message: "All courses endpoint",
-    });
-});
-
+app.use("/user", userRouter);
+app.use("/course", courseRouter);
 
 app.listen(port, ()=>{
-    console.log(`Server is Running on Port : ${port}`);
+    console.log(`Server is running on port ${port}`);
 });
 
