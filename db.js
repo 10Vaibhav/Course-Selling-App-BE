@@ -4,7 +4,6 @@ const Schema = mongoose.Schema;
 const ObjectId = mongoose.Types.ObjectId;
 
 dotenv.config();
-mongoose.connect(process.env.connection)
 
 const userSchema = new Schema({
     email: {type: String, unique: true},
