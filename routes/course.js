@@ -10,7 +10,7 @@ courseRouter.post("/purchase", (req,res)=>{
 
 
 
-courseRouter.get("/", (req,res)=>{
+courseRouter.get("/preview", (req,res)=>{
     res.json({
         message: "All courses endpoint",
     });
