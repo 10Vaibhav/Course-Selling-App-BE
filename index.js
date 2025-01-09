@@ -1,5 +1,4 @@
 const express = require("express");
-const jwt = require("jsonwebtoken");
 const dotenv = require("dotenv");
 const mongoose = require("mongoose");
 
@@ -9,7 +8,6 @@ const { adminRouter } = require("./routes/admin");
 
 dotenv.config();
 
-const JWT_SECRET = process.env.JWT_SECRET;
 const port = 3000;
 
 const app = express();
