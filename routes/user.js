@@ -23,7 +23,7 @@ userRouter.post("/signup", async (req, res) => {
 
   if (!parsedDataWithSuccess.success) {
     res.json({
-      message: "Incorrect format !!",
+      message: "user entry Incorrect format !!",
       error: parsedDataWithSuccess.error,
     });
     return;
@@ -40,12 +40,12 @@ userRouter.post("/signup", async (req, res) => {
     });
 
     res.json({
-      message: "signup succeeded",
+      message: "user signup succeeded",
     });
   } catch (error) {
     console.log(error);
     res.json({
-      message: "signup has failed",
+      message: "user signup has failed",
     });
   }
 });
@@ -77,11 +77,11 @@ userRouter.post("/signin", async (req, res) => {
 
     res.json({
       token: token,
-      message: "signin succeeded !!",
+      message: "user signin succeeded !!",
     });
   } else {
     res.status(403).json({
-      message: "Incorrect Credentials !!",
+      message: "user Incorrect Credentials !!",
     });
   }
 });
