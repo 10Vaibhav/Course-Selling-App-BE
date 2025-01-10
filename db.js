@@ -1,9 +1,6 @@
 const mongoose = require("mongoose");
-const dotenv = require("dotenv")
 const Schema = mongoose.Schema;
 const ObjectId = mongoose.Types.ObjectId;
-
-dotenv.config();
 
 const userSchema = new Schema({
     email: {type: String, unique: true},

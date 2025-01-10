@@ -1,13 +1,12 @@
 const {Router} = require("express");
-const {adminModel} = require("../db");
+const {adminModel, courseModel} = require("../db");
 const jwt = require("jsonwebtoken");
-const dotenv = require("dotenv");
 const {z} = require("zod");
 const bcrypt = require("bcrypt");
 
-dotenv.config()
-
-const JWT_ADMIN_PASSWORD = process.env.JWT_ADMIN_PASSWORD;
+// const JWT_ADMIN_PASSWORD = process.env.JWT_ADMIN_PASSWORD;
+const {JWT_ADMIN_PASSWORD} = require("../config");
+const { adminMiddleware } = require("../middleware/admin");
 
 const adminRouter = Router();
 
@@ -86,11 +85,32 @@ adminRouter.post("/signin", async(req,res)=>{
   }
 });
 
-adminRouter.post("/course", (req,res)=>{
-    res.json({
-        message: "admin course end point",
-    })
-});
+adminRouter.post("/course",adminMiddleware,async (req,res)=>{
+    const adminId = req.userId;
+
+    const {title, description, imageUrl, price} = req.body;
+
+    try{
+      const course = await courseModel.create({
+        title: title,
+        description: description,
+        imageUrl: imageUrl,
+        price: price,
+        creatorId: adminId
+      });
+
+      res.json({
+        message: "Course created",
+        courseId : course._id
+      });
+    }catch(error){
+      console.log(error);
+      res.json({
+        message: "Course Creation failed",
+      })
+    }
+
+  });
 
 adminRouter.put("/course", (req,res)=>{
     res.json({
