@@ -1,55 +1,55 @@
-const {Router} = require("express");
-const {adminModel, courseModel} = require("../db");
+const { Router } = require("express");
+const { adminModel, courseModel } = require("../db");
 const jwt = require("jsonwebtoken");
-const {z} = require("zod");
+const { z } = require("zod");
 const bcrypt = require("bcrypt");
 
 // const JWT_ADMIN_PASSWORD = process.env.JWT_ADMIN_PASSWORD;
-const {JWT_ADMIN_PASSWORD} = require("../config");
+const { JWT_ADMIN_PASSWORD } = require("../config");
 const { adminMiddleware } = require("../middleware/admin");
 
 const adminRouter = Router();
 
-adminRouter.post("/signup", async (req,res)=>{
-    const requiredBody = z.object({
-        email: z.string().min(3).max(100).email(),
-        password: z.string().min(3).max(20),
-        firstName: z.string().min(3),
-        lastName: z.string().min(3),
-      });
+adminRouter.post("/signup", async (req, res) => {
+  const requiredBody = z.object({
+    email: z.string().min(3).max(100).email(),
+    password: z.string().min(3).max(20),
+    firstName: z.string().min(3),
+    lastName: z.string().min(3),
+  });
 
-      const parsedDataWithSuccess = requiredBody.safeParse(req.body);
+  const parsedDataWithSuccess = requiredBody.safeParse(req.body);
 
-      if (!parsedDataWithSuccess.success) {
-        res.json({
-          message: "admin entry Incorrect format !!",
-          error: parsedDataWithSuccess.error,
-        });
-        return;
-      }
+  if (!parsedDataWithSuccess.success) {
+    res.json({
+      message: "admin entry Incorrect format !!",
+      error: parsedDataWithSuccess.error,
+    });
+    return;
+  }
 
-      try {
-        const hashedPassword = await bcrypt.hash(req.body.password, 4);
+  try {
+    const hashedPassword = await bcrypt.hash(req.body.password, 4);
 
-        await adminModel.create({
-          email: req.body.email,
-          password: hashedPassword,
-          firstName: req.body.firstName,
-          lastName: req.body.lastName,
-        });
+    await adminModel.create({
+      email: req.body.email,
+      password: hashedPassword,
+      firstName: req.body.firstName,
+      lastName: req.body.lastName,
+    });
 
-        res.json({
-          message: "admin signup succeeded",
-        });
-      } catch (error) {
-        console.log(error);
-        res.json({
-          message: "admin signup has failed",
-        });
-      }
+    res.json({
+      message: "admin signup succeeded",
+    });
+  } catch (error) {
+    console.log(error);
+    res.json({
+      message: "admin signup has failed",
+    });
+  }
 });
 
-adminRouter.post("/signin", async(req,res)=>{
+adminRouter.post("/signin", async (req, res) => {
   const { email, password } = req.body;
 
   const admin = await adminModel.findOne({
@@ -85,46 +85,89 @@ adminRouter.post("/signin", async(req,res)=>{
   }
 });
 
-adminRouter.post("/course",adminMiddleware,async (req,res)=>{
-    const adminId = req.userId;
+adminRouter.post("/course", adminMiddleware, async (req, res) => {
+  const adminId = req.userId;
 
-    const {title, description, imageUrl, price} = req.body;
+  const { title, description, imageUrl, price } = req.body;
 
-    try{
-      const course = await courseModel.create({
+  try {
+    const course = await courseModel.create({
+      title: title,
+      description: description,
+      imageUrl: imageUrl,
+      price: price,
+      creatorId: adminId,
+    });
+
+    res.json({
+      message: "Course created",
+      courseId: course._id,
+    });
+  } catch (error) {
+    console.log(error);
+    res.json({
+      message: "Course Creation failed",
+    });
+  }
+});
+
+adminRouter.put("/course", adminMiddleware, async (req, res) => {
+  const adminId = req.userId;
+
+  const { title, description, imageUrl, price, courseId } = req.body;
+
+  try {
+    const checkCourse = await courseModel.findOne({
+      _id: courseId,
+      creatorId: adminId,
+    });
+
+    if (!checkCourse) {
+      res.json({
+        "sended course Id ": courseId,
+        message: "Course Does not exist",
+      });
+      return;
+    }
+
+    const course = await courseModel.updateOne(
+      {
+        _id: courseId,
+        creatorId: adminId,
+      },
+      {
         title: title,
         description: description,
         imageUrl: imageUrl,
         price: price,
-        creatorId: adminId
-      });
+      }
+    );
 
-      res.json({
-        message: "Course created",
-        courseId : course._id
-      });
-    }catch(error){
-      console.log(error);
-      res.json({
-        message: "Course Creation failed",
-      })
-    }
-
-  });
-
-adminRouter.put("/course", (req,res)=>{
     res.json({
-        message: "admin update course end point",
+      message: "Course Updated!!",
+      courseId: course._id,
     });
+  } catch (error) {
+    console.log(error);
+    res.json({
+      message: "Course Update failed",
+    });
+  }
 });
 
-adminRouter.get("/course/bulk", (req,res)=>{
-    res.json({
-        message: "admin get courses in bulk",
-    });
+adminRouter.get("/course/bulk", adminMiddleware,async (req, res) => {
+  const adminId = req.userId;
+
+  const courses = await courseModel.find({
+    creatorId: adminId,
+  });
+
+  res.json({
+    message: "All Course Received !!",
+    courses: courses
+  })
 });
 
 module.exports = {
-    adminRouter: adminRouter
-}
-
+  adminRouter: adminRouter,
+};
